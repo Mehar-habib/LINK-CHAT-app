@@ -1,3 +1,4 @@
+import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import {
   Dialog,
   DialogContent,
@@ -6,13 +7,16 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { animationDefaultOptions } from "@/lib/utils";
+import { apiClient } from "@/lib/api-client";
+import { animationDefaultOptions, getColor } from "@/lib/utils";
+import { HOST, SEARCH_CONTACTS_ROUTE } from "@/utils/constants";
 import React, { useState } from "react";
 import { FaPlus } from "react-icons/fa";
 import Lottie from "react-lottie";
@@ -21,7 +25,24 @@ function NewDM() {
   const [openNewContactModal, setOpenNewContactModal] = useState(false);
   const [searchedContacts, setSearchedContacts] = useState([]);
 
-  const searchContacts = async (searchTerm) => {};
+  const searchContacts = async (searchTerm) => {
+    try {
+      if (searchTerm.length > 0) {
+        const response = await apiClient.post(
+          SEARCH_CONTACTS_ROUTE,
+          { searchTerm },
+          { withCredentials: true }
+        );
+        if (response.status === 200 && response.data.contacts) {
+          setSearchedContacts(response.data.contacts);
+        }
+      } else {
+        setSearchedContacts([]);
+      }
+    } catch (error) {
+      console.log({ error });
+    }
+  };
   return (
     <>
       <TooltipProvider>
@@ -51,6 +72,46 @@ function NewDM() {
               onChange={(e) => searchContacts(e.target.value)}
             />
           </div>
+          <ScrollArea className="h-[250px]">
+            <div className="flex flex-col gap-5">
+              {searchedContacts.map((contact) => (
+                <div
+                  key={contact._id}
+                  className="flex gap-3 items-center cursor-pointer"
+                >
+                  <div className="relative h-12 w-12">
+                    <Avatar className="h-12 w-12  rounded-full overflow-hidden">
+                      {contact.image ? (
+                        <AvatarImage
+                          src={`${HOST}/${contact.image}`}
+                          alt="Profile"
+                          className="object-cover w-full h-full bg-black"
+                        />
+                      ) : (
+                        <div
+                          className={`uppercase h-12 w-12  text-lg border-[1px] flex items-center justify-center rounded-full ${getColor(
+                            contact.color
+                          )}`}
+                        >
+                          {contact.firstName
+                            ? contact.firstName.split("").shift()
+                            : contact.email.split("").shift()}
+                        </div>
+                      )}
+                    </Avatar>
+                  </div>
+                  <div className="flex flex-col">
+                    <span>
+                      {contact.firstName
+                        ? `${contact.firstName} ${contact.lastName}`
+                        : contact.email}
+                    </span>
+                    <span className="text-xs">{contact.email}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
           {searchedContacts.length <= 0 && (
             <div className="flex-1 md:bg-[#1c1d25] md:flex flex-col justify-center items-center  duration-1000 transition-all mt-5">
               <Lottie
