@@ -16,12 +16,14 @@ import {
 } from "@/components/ui/tooltip";
 import { apiClient } from "@/lib/api-client";
 import { animationDefaultOptions, getColor } from "@/lib/utils";
+import { useAppStore } from "@/store";
 import { HOST, SEARCH_CONTACTS_ROUTE } from "@/utils/constants";
 import React, { useState } from "react";
 import { FaPlus } from "react-icons/fa";
 import Lottie from "react-lottie";
 
 function NewDM() {
+  const { setSelectedChatType, setSelectedChatData } = useAppStore();
   const [openNewContactModal, setOpenNewContactModal] = useState(false);
   const [searchedContacts, setSearchedContacts] = useState([]);
 
@@ -42,6 +44,13 @@ function NewDM() {
     } catch (error) {
       console.log({ error });
     }
+  };
+
+  const selectNewContact = (contact) => {
+    setOpenNewContactModal(false);
+    setSelectedChatType("contact");
+    setSelectedChatData(contact);
+    setSearchedContacts([]);
   };
   return (
     <>
@@ -78,6 +87,7 @@ function NewDM() {
                 <div
                   key={contact._id}
                   className="flex gap-3 items-center cursor-pointer"
+                  onClick={() => selectNewContact(contact)}
                 >
                   <div className="relative h-12 w-12">
                     <Avatar className="h-12 w-12  rounded-full overflow-hidden">
