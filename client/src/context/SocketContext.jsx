@@ -32,6 +32,24 @@ export const SocketProvider = ({ children }) => {
         console.log("Connected to socket server");
       });
 
+      // Handle incoming messages in the client
+      const handleReceiveMessage = (message) => {
+        // Extract the current selected chat and the addMessage function from the global state
+        const { selectedChatData, selectedChatType, addMessage } =
+          useAppStore.getState();
+
+        // Check if a chat is selected and the message belongs to the currently open chat
+        if (
+          selectedChatType !== undefined &&
+          (selectedChatData._id === message.sender._id || // Message is from the person currently being chatted with
+            selectedChatData._id === message.recipient._id) // or sent to the person currently being chatted with
+        ) {
+          // Add the incoming message to the chat window
+          addMessage(message);
+        }
+      };
+
+      socket.current.on("receiveMessage", handleReceiveMessage);
       // Cleanup function to disconnect socket when component unmounts or userInfo changes
       return () => {
         socket.current.disconnect();

@@ -1,4 +1,4 @@
-export const createChatSlice = (set) => ({
+export const createChatSlice = (set, get) => ({
   // Stores the type of the currently selected chat (e.g., "group", "direct", etc.)
   selectedChatType: undefined,
   // Stores the data of the currently selected chat (e.g., chat ID, participants, etc.)
@@ -19,4 +19,27 @@ export const createChatSlice = (set) => ({
       selectedChatType: undefined,
       selectedChatMessages: [],
     }),
+  // Zustand action to add a new message to the selected chat's message list
+  addMessage: (message) => {
+    const selectedChatMessages = get().selectedChatMessages; // Get existing messages
+    const selectedChatType = get().selectedChatType; // Get the type of chat (user or channel)
+
+    set({
+      selectedChatMessages: [
+        ...selectedChatMessages, // Preserve existing messages
+        {
+          ...message, // Add the new message
+          // Normalize sender/recipient based on chat type
+          recipient:
+            selectedChatType === "channel"
+              ? message.recipient // Keep as object in case of channel
+              : message.recipient._id, // Extract ID for direct messages
+          sender:
+            selectedChatType === "channel"
+              ? message.sender
+              : message.sender._id,
+        },
+      ],
+    });
+  },
 });
