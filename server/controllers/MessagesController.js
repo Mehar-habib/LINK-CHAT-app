@@ -1,4 +1,5 @@
 import Message from "../models/MessagesModel.js";
+import { mkdirSync, renameSync } from "fs";
 
 export const getMessages = async (req, res, next) => {
   try {
@@ -27,6 +28,43 @@ export const getMessages = async (req, res, next) => {
     return res.status(200).json({ messages });
   } catch (error) {
     // Log and return any server error
+    console.log({ error });
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+// Controller: handle single-file uploads from the client and save the file
+export const uploadFile = async (req, res, next) => {
+  try {
+    // ───────────────────────────────────────────────────────────────────────────
+    // 1) Validate that Multer attached a file to the request
+    // ───────────────────────────────────────────────────────────────────────────
+    if (!req.file) {
+      return res.status(400).json({ message: "Please provide a file" });
+    }
+
+    // ───────────────────────────────────────────────────────────────────────────
+    // 2) Build a unique directory & filename
+    //    • `date` gives us a millisecond timestamp for uniqueness
+    //    • Final path will look like:  uploads/files/1718039123456/myDoc.pdf
+    // ───────────────────────────────────────────────────────────────────────────
+    const date = Date.now(); // e.g. 1718039123456
+    const fileDir = `uploads/files/${date}`; // upload folder
+    const fileName = `${fileDir}/${req.file.originalname}`;
+
+    // ───────────────────────────────────────────────────────────────────────────
+    // 3) Create the directory (recursively) and move the temp upload there
+    //    Multer stores the temp file at `req.file.path`
+    // ───────────────────────────────────────────────────────────────────────────
+    mkdirSync(fileDir, { recursive: true }); // create folder if it doesn’t exist
+    renameSync(req.file.path, fileName); // move file → final location
+
+    // ───────────────────────────────────────────────────────────────────────────
+    // 4) Success response: send back the saved file path
+    // ───────────────────────────────────────────────────────────────────────────
+    return res.status(200).json({ filePath: fileName });
+  } catch (error) {
+    // On error: log it and respond with 500
     console.log({ error });
     return res.status(500).json({ message: error.message });
   }

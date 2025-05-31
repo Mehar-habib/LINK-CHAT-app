@@ -1,8 +1,10 @@
 import { apiClient } from "@/lib/api-client";
 import { useAppStore } from "@/store";
-import { GET_MESSAGES_ROUTE } from "@/utils/constants";
+import { GET_MESSAGES_ROUTE, HOST } from "@/utils/constants";
 import moment from "moment";
 import { useEffect, useRef } from "react";
+import { MdFolderZip } from "react-icons/md";
+import { IoMdArrowRoundDown } from "react-icons/io";
 
 function MessageContainer() {
   const scrollRef = useRef();
@@ -39,6 +41,12 @@ function MessageContainer() {
     }
   }, [selectedChatMessages]);
 
+  const checkIfImage = (filePath) => {
+    const imageUrlRegex =
+      /\.(jpg|jpeg|png|gif|tiff|bmp|tif|webp|svg|ico|heic|heif)$/i;
+    return imageUrlRegex.test(filePath);
+  };
+
   const renderMessages = () => {
     let lastDate = null;
     return selectedChatMessages.map((message, index) => {
@@ -72,6 +80,27 @@ function MessageContainer() {
           } border inline-block p-4 my-1 max-w-[50%] break-words rounded-lg text-justify`}
         >
           {message.content}
+        </div>
+      )}
+      {message.messageType === "file" && (
+        <div
+          className={`${
+            message.sender !== selectedChatData._id
+              ? "bg-[#4f46e5]/20 text-[#dcdafe] border border-[#6366f1]/40"
+              : "bg-[#1f2937]/50 text-[#e5e7eb] border border-[#334155]/40"
+          } border inline-block p-4 my-1 max-w-[50%] break-words rounded-lg`}
+        >
+          {checkIfImage(message.fileUrl) ? (
+            <div className="cursor-pointer">
+              <img
+                src={`${HOST}/${message.fileUrl}`}
+                height={300}
+                width={300}
+              />
+            </div>
+          ) : (
+            <div></div>
+          )}
         </div>
       )}
       <div className="text-xs text-gray-600">
