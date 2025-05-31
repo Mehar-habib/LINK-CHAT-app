@@ -1,3 +1,5 @@
+import { useSocket } from "@/context/SocketContext";
+import { useAppStore } from "@/store";
 import EmojiPicker from "emoji-picker-react";
 import { useEffect, useRef, useState } from "react";
 import { GrAttachment } from "react-icons/gr";
@@ -6,6 +8,8 @@ import { RiEmojiStickerLine } from "react-icons/ri";
 
 function MessageBar() {
   const emojiRef = useRef();
+  const { selectedChatData, selectedChatType, userInfo } = useAppStore();
+  const socket = useSocket();
   const [message, setMessage] = useState("");
   const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
 
@@ -24,7 +28,27 @@ function MessageBar() {
   const handleAddEmoji = (emoji) => {
     setMessage((msg) => msg + emoji.emoji);
   };
-  const handleSendMessage = () => {};
+  const handleSendMessage = async () => {
+    if (!message.trim()) return; // optional: avoid sending empty messages
+
+    if (!userInfo?.id) {
+      console.error("Cannot send message: userInfo.id is undefined");
+      return;
+    }
+
+    if (selectedChatType === "contact" && selectedChatData?._id) {
+      socket.emit("sendMessage", {
+        sender: userInfo.id,
+        content: message,
+        recipient: selectedChatData._id,
+        messageType: "text",
+        fileUrl: undefined,
+      });
+      setMessage(""); // clear input after sending
+    } else {
+      console.error("Cannot send message: selectedChatData._id is missing");
+    }
+  };
 
   return (
     <div className="h-[10vh] bg-[#1c1d25] flex justify-center items-center px-8 mb-6 gap-6">

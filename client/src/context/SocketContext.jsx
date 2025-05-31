@@ -44,6 +44,7 @@ export const SocketProvider = ({ children }) => {
           (selectedChatData._id === message.sender._id || // Message is from the person currently being chatted with
             selectedChatData._id === message.recipient._id) // or sent to the person currently being chatted with
         ) {
+          console.log("Received message:", message);
           // Add the incoming message to the chat window
           addMessage(message);
         }
