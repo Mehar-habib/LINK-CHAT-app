@@ -2,7 +2,7 @@ import { apiClient } from "@/lib/api-client";
 import { useAppStore } from "@/store";
 import { GET_MESSAGES_ROUTE, HOST } from "@/utils/constants";
 import moment from "moment";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MdFolderZip } from "react-icons/md";
 import { IoMdArrowRoundDown } from "react-icons/io";
 
@@ -46,7 +46,28 @@ function MessageContainer() {
       /\.(jpg|jpeg|png|gif|tiff|bmp|tif|webp|svg|ico|heic|heif)$/i;
     return imageUrlRegex.test(filePath);
   };
+  const downloadFile = async (url) => {
+    // 1) Send GET request to the server to fetch the file as a binary blob
+    const response = await apiClient.get(`${HOST}/${url}`, {
+      responseType: "blob", // ensures binary data (e.g., image, PDF, etc.)
+    });
 
+    // 2) Create a temporary blob URL from the response data
+    const urlBlob = window.URL.createObjectURL(new Blob([response.data]));
+
+    // 3) Create a temporary anchor element to trigger file download
+    const link = document.createElement("a");
+    link.href = urlBlob;
+
+    // 4) Extract the filename from the URL and set it as the download name
+    link.setAttribute("download", url.split("/").pop());
+
+    // 5) Append the link to the document, simulate a click, then clean up
+    document.body.appendChild(link); // required for Firefox
+    link.click(); // triggers the download
+    link.remove(); // remove the temporary element
+    window.URL.revokeObjectURL(urlBlob); // free up memory
+  };
   const renderMessages = () => {
     let lastDate = null;
     return selectedChatMessages.map((message, index) => {
@@ -99,7 +120,18 @@ function MessageContainer() {
               />
             </div>
           ) : (
-            <div></div>
+            <div className="flex items-center justify-center gap-4">
+              <span className="text-white/80 text-3xl bg-black/20 rounded-full p-3">
+                <MdFolderZip />
+              </span>
+              <span>{message.fileUrl.split("/").pop()}</span>
+              <span
+                className="bg-black/20 p-3 rounded-full hover:bg-black/50 cursor-pointer transition-all duration-300"
+                onClick={() => downloadFile(message.fileUrl)}
+              >
+                <IoMdArrowRoundDown />
+              </span>
+            </div>
           )}
         </div>
       )}
