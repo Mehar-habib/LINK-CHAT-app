@@ -14,6 +14,8 @@ function MessageContainer() {
     selectedChatData,
     selectedChatMessages,
     setSelectedChatMessages,
+    setFileDownloadProgress,
+    setIsDownloading,
   } = useAppStore();
 
   const [showImage, setShowImage] = useState(false);
@@ -50,10 +52,18 @@ function MessageContainer() {
       /\.(jpg|jpeg|png|gif|tiff|bmp|tif|webp|svg|ico|heic|heif)$/i;
     return imageUrlRegex.test(filePath);
   };
+
   const downloadFile = async (url) => {
+    setIsDownloading(true);
+    setFileDownloadProgress(0);
     // 1) Send GET request to the server to fetch the file as a binary blob
     const response = await apiClient.get(`${HOST}/${url}`, {
       responseType: "blob", // ensures binary data (e.g., image, PDF, etc.)
+      onDownloadProgress: (progressEvent) => {
+        const { loaded, total } = progressEvent;
+        const percentCompleted = Math.round((loaded * 100) / total);
+        setFileDownloadProgress(percentCompleted);
+      },
     });
 
     // 2) Create a temporary blob URL from the response data
@@ -71,7 +81,10 @@ function MessageContainer() {
     link.click(); // triggers the download
     link.remove(); // remove the temporary element
     window.URL.revokeObjectURL(urlBlob); // free up memory
+    setIsDownloading(false);
+    setFileDownloadProgress(0);
   };
+
   const renderMessages = () => {
     let lastDate = null;
     return selectedChatMessages.map((message, index) => {
