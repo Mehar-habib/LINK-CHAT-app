@@ -17,21 +17,19 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { apiClient } from "@/lib/api-client";
-import { animationDefaultOptions, getColor } from "@/lib/utils";
 import { useAppStore } from "@/store";
 import {
+  CREATE_CHANNEL_ROUTE,
   GET_ALL_CONTACTS_ROUTE,
-  HOST,
-  SEARCH_CONTACTS_ROUTE,
 } from "@/utils/constants";
 import React, { useEffect, useState } from "react";
 import { FaPlus } from "react-icons/fa";
 import Lottie from "react-lottie";
 
 function CreateChannel() {
-  const { setSelectedChatType, setSelectedChatData } = useAppStore();
+  const { setSelectedChatType, setSelectedChatData, addChannel } =
+    useAppStore();
   const [newChannelModel, setNewChannelModel] = useState(false);
-  const [searchedContacts, setSearchedContacts] = useState([]);
   const [allContacts, setAllContacts] = useState([]);
   const [selectedContacts, setSelectedContacts] = useState([]);
   const [channelName, setChannelName] = useState("");
@@ -46,7 +44,28 @@ function CreateChannel() {
     getData();
   }, []);
 
-  const createChannel = async () => {};
+  const createChannel = async () => {
+    try {
+      if (channelName.length > 0 && selectedContacts.length > 0) {
+        const response = await apiClient.post(
+          CREATE_CHANNEL_ROUTE,
+          {
+            name: channelName,
+            members: selectedContacts.map((contact) => contact.value),
+          },
+          { withCredentials: true }
+        );
+        if (response.status === 201) {
+          setChannelName("");
+          setSelectedContacts([]);
+          setNewChannelModel(false);
+          addChannel(response.data.channel);
+        }
+      }
+    } catch (error) {
+      console.log({ error });
+    }
+  };
   return (
     <>
       <TooltipProvider>
