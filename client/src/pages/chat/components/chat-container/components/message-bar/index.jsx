@@ -37,6 +37,7 @@ function MessageBar() {
   const handleAddEmoji = (emoji) => {
     setMessage((msg) => msg + emoji.emoji);
   };
+
   const handleSendMessage = async () => {
     if (!message.trim()) return; // optional: avoid sending empty messages
 
@@ -54,6 +55,14 @@ function MessageBar() {
         fileUrl: undefined,
       });
       setMessage(""); // clear input after sending
+    } else if (selectedChatType === "channel") {
+      socket.emit("send-channel-message", {
+        sender: userInfo.id,
+        content: message,
+        messageType: "text",
+        fileUrl: undefined,
+        channelId: selectedChatData._id,
+      });
     } else {
       console.error("Cannot send message: selectedChatData._id is missing");
     }
@@ -86,6 +95,14 @@ function MessageBar() {
               recipient: selectedChatData._id,
               messageType: "file",
               fileUrl: response.data.filePath,
+            });
+          } else if (selectedChatType === "channel") {
+            socket.emit("send-channel-message", {
+              sender: userInfo.id,
+              content: undefined,
+              messageType: "file",
+              fileUrl: response.data.filePath,
+              channelId: selectedChatData._id,
             });
           }
         }
