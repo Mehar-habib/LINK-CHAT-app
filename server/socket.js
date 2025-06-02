@@ -90,13 +90,12 @@ const setupSocket = (server) => {
         if (memberSocketId) {
           io.to(memberSocketId).emit("receive-channel-message", finalData);
         }
-
-        // Also emit the message to the channel admin
-        const adminSocketId = userSocketMap.get(channel.admin.toString());
-        if (adminSocketId) {
-          io.to(adminSocketId).emit("receive-channel-message", finalData);
-        }
       });
+      // Also emit the message to the channel admin
+      const adminSocketId = userSocketMap.get(channel.admin._id.toString());
+      if (adminSocketId) {
+        io.to(adminSocketId).emit("receive-channel-message", finalData);
+      }
     }
   };
 

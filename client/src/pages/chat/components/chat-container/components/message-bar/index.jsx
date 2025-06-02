@@ -63,6 +63,7 @@ function MessageBar() {
         fileUrl: undefined,
         channelId: selectedChatData._id,
       });
+      setMessage("");
     } else {
       console.error("Cannot send message: selectedChatData._id is missing");
     }
