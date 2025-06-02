@@ -186,6 +186,45 @@ function MessageContainer() {
             {message.content}
           </div>
         )}
+
+        {message.messageType === "file" && (
+          <div
+            className={`${
+              message.sender._id === userInfo.id
+                ? "bg-[#4f46e5]/20 text-[#dcdafe] border border-[#6366f1]/40"
+                : "bg-[#1f2937]/50 text-[#e5e7eb] border border-[#334155]/40"
+            } border inline-block p-4 my-1 max-w-[50%] break-words rounded-lg`}
+          >
+            {checkIfImage(message.fileUrl) ? (
+              <div
+                className="cursor-pointer"
+                onClick={() => {
+                  setShowImage(true);
+                  setImageURL(message.fileUrl);
+                }}
+              >
+                <img
+                  src={`${HOST}/${message.fileUrl}`}
+                  height={300}
+                  width={300}
+                />
+              </div>
+            ) : (
+              <div className="flex items-center justify-center gap-4">
+                <span className="text-white/80 text-3xl bg-black/20 rounded-full p-3">
+                  <MdFolderZip />
+                </span>
+                <span>{message.fileUrl.split("/").pop()}</span>
+                <span
+                  className="bg-black/20 p-3 rounded-full hover:bg-black/50 cursor-pointer transition-all duration-300"
+                  onClick={() => downloadFile(message.fileUrl)}
+                >
+                  <IoMdArrowRoundDown />
+                </span>
+              </div>
+            )}
+          </div>
+        )}
         {message.sender._id !== userInfo.id ? (
           <div className="flex items-center justify-start gap-3">
             <Avatar className="h-8 w-8  rounded-full overflow-hidden">
