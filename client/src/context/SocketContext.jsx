@@ -35,8 +35,12 @@ export const SocketProvider = ({ children }) => {
       // Handle incoming messages in the client
       const handleReceiveMessage = (message) => {
         // Extract the current selected chat and the addMessage function from the global state
-        const { selectedChatData, selectedChatType, addMessage } =
-          useAppStore.getState();
+        const {
+          selectedChatData,
+          selectedChatType,
+          addMessage,
+          addContactsInDMContacts,
+        } = useAppStore.getState();
 
         // Check if a chat is selected and the message belongs to the currently open chat
         if (
@@ -48,17 +52,23 @@ export const SocketProvider = ({ children }) => {
           // Add the incoming message to the chat window
           addMessage(message);
         }
+        addContactsInDMContacts(message);
       };
 
       const handleReceiveChannelMessage = (message) => {
-        const { selectedChatData, selectedChatType, addMessage } =
-          useAppStore.getState();
+        const {
+          selectedChatData,
+          selectedChatType,
+          addMessage,
+          addChannelInChannelList,
+        } = useAppStore.getState();
         if (
           selectedChatType !== undefined &&
           selectedChatData._id === message.channelId
         ) {
           addMessage(message);
         }
+        addChannelInChannelList(message);
       };
 
       socket.current.on("receiveMessage", handleReceiveMessage);

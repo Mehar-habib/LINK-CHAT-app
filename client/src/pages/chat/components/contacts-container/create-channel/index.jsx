@@ -1,4 +1,3 @@
-import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -9,7 +8,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import MultipleSelector from "@/components/ui/multipleselect";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Tooltip,
   TooltipContent,
@@ -24,11 +22,9 @@ import {
 } from "@/utils/constants";
 import React, { useEffect, useState } from "react";
 import { FaPlus } from "react-icons/fa";
-import Lottie from "react-lottie";
 
 function CreateChannel() {
-  const { setSelectedChatType, setSelectedChatData, addChannel } =
-    useAppStore();
+  const { addChannel } = useAppStore();
   const [newChannelModel, setNewChannelModel] = useState(false);
   const [allContacts, setAllContacts] = useState([]);
   const [selectedContacts, setSelectedContacts] = useState([]);
@@ -60,6 +56,7 @@ function CreateChannel() {
           setSelectedContacts([]);
           setNewChannelModel(false);
           addChannel(response.data.channel);
+          console.log(addChannel(response.data.channel));
         }
       }
     } catch (error) {

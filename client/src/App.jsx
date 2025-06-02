@@ -29,8 +29,8 @@ function App() {
         if (response.status === 200 && response.data.user.id)
           setUserInfo(response.data.user);
         else setLoading(undefined);
-        console.log({ response });
       } catch (error) {
+        console.log({ error });
         setUserInfo(undefined);
       } finally {
         setLoading(false);

@@ -60,4 +60,62 @@ export const createChatSlice = (set, get) => ({
       ],
     });
   },
+  // Function to reorder the channel list when a new message is received
+  addChannelInChannelList: (message) => {
+    // Get the current list of channels from the store
+    const channels = get().channels;
+
+    // Find the channel object that matches the channelId from the message
+    const data = channels.find((channel) => channel._id === message.channelId);
+
+    // Find the index of that channel in the array
+    const index = channels.findIndex(
+      (channel) => channel._id === message.channelId
+    );
+
+    // If the channel exists in the list
+    if (index !== -1 && index !== undefined) {
+      // Remove the channel from its current position
+      channels.splice(index, 1);
+
+      // Add the channel back to the beginning of the array
+      // This effectively moves the most recently active channel to the top
+      channels.unshift(data);
+    }
+  },
+  addContactsInDMContacts: (message) => {
+    // Get the current user's ID from the global state
+    const userId = get().userInfo.id;
+
+    // Determine the ID of the person the user is chatting with (not themselves)
+    const formId =
+      message.sender._id === userId
+        ? message.recipient._id
+        : message.sender._id;
+
+    // Get the full user data of the other person (sender or recipient)
+    const formData =
+      message.sender._id === userId ? message.recipient : message.sender;
+
+    // Get the current list of direct message contacts from the store
+    const dmContacts = get().directMessagesContacts;
+
+    // Try to find if this contact already exists in the list
+    const data = dmContacts.find((contact) => contact._id === formId);
+
+    // Get the index of that contact in the list
+    const index = dmContacts.findIndex((contact) => contact._id === formId);
+
+    // If contact exists, remove it from its current position and move it to the top
+    if (index !== -1 && index !== undefined) {
+      dmContacts.splice(index, 1);
+      dmContacts.unshift(data);
+    } else {
+      // If contact does not exist, add it to the top of the list
+      dmContacts.unshift(formData);
+    }
+
+    // Update the state with the modified contacts list
+    set({ directMessagesContacts: dmContacts });
+  },
 });

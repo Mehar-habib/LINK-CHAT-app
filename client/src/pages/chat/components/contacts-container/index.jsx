@@ -27,7 +27,6 @@ function ContactsContainer() {
         setDirectMessagesContacts(response.data.contacts);
       }
     };
-    // /////////////
     const getChannels = async () => {
       const response = await apiClient.get(GET_USER_CHANNELS_ROUTE, {
         withCredentials: true,
